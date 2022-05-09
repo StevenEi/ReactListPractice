@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/StevenEi/static/css/main.ffc02832.css",
+    "main.js": "/StevenEi/static/js/main.e6971148.js",
+    "index.html": "/StevenEi/index.html",
+    "main.ffc02832.css.map": "/StevenEi/static/css/main.ffc02832.css.map",
+    "main.e6971148.js.map": "/StevenEi/static/js/main.e6971148.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ffc02832.css",
+    "static/js/main.e6971148.js"
+  ]
+}
