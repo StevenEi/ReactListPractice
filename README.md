@@ -3,6 +3,7 @@
 ## Project Description
 
 This project is a grocery list app that utilizes the React library as it's UI framework. This is not a complicated app, the functionality of it is: you can add and remove groceries from a list. This was made for practice with Prop drilling and making components.
+uses JSON server npm package for the backend
 
 # Table of Contents
 

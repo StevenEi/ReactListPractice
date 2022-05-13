@@ -1,50 +1,94 @@
-import Header from "./Header"
-import Content from "./Content"
-import Footer from "./Footer"
-import AddItem from "./AddItem"
-import { useState } from "react"
+import Header from "./Header";
+import SearchItem from "./SearchItem";
+import Content from "./Content";
+import Footer from "./Footer";
+import AddItem from "./AddItem";
+import { useState, useEffect } from "react";
 
 function App() {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      checked: false,
-      item: "Almonds"
-    },
-    {
-      id: 2,
-      checked: false,
-      item: "CAPN CRONCH"
-    },
-    {
-      id: 3,
-      checked: false,
-      item: "carrot"
-    }
-  ]);
+  // url for the items from the backend
+  const API_URL = "http://localhost:3500/items";
+
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState("");
+  const [search, setSearch] = useState("");
+  const [fetchError, setFetchError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw Error("Did not receive expected data");
+        const listItems = await response.json();
+        setItems(listItems);
+        // sets the fetch error back to null if there was an error before
+        setFetchError(null);
+      } catch (err) {
+        setFetchError(err.stack);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    // set timeout is used to simulate loading data from a server
+    setTimeout(() => {
+      fetchItems();
+    }, 1500);
+  }, []);
+
+  const addItem = (item) => {
+    // if there's an item, set the ID of that item to the last item's ID + 1. If no ID, give it an ID of 1
+    const id = items.length ? items[items.length - 1].id + 1 : 1;
+    const theNewItem = { id, checked: false, item };
+    const listItems = [...items, theNewItem];
+    setItems(listItems);
+  };
 
   const handleCheck = (id) => {
-    const listItems = items.map((item) => item.id === id ? { ...item, checked: !item.checked } : item);
+    const listItems = items.map((item) =>
+      item.id === id ? { ...item, checked: !item.checked } : item
+    );
     setItems(listItems);
-    localStorage.setItem("shoppinglist", JSON.stringify(listItems))
   };
 
   const handleDelete = (id) => {
-    const listItems = items.filter((item) => item.id !== id)
-    setItems(listItems)
-    localStorage.setItem("shoppinglist", JSON.stringify(listItems))
+    const listItems = items.filter((item) => item.id !== id);
+    setItems(listItems);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!newItem) return;
+
+    // clears the input field after submitting the new item
+    addItem(newItem);
+    setNewItem("");
   };
 
   return (
     <div className="App">
       <Header title="Grocery List" />
-      <AddItem/>
-      <Content
-        items={items}
-        handleCheck={handleCheck}
-        handleDelete={handleDelete}
+      <AddItem
+        newItem={newItem}
+        setNewItem={setNewItem}
+        handleSubmit={handleSubmit}
       />
-      <Footer length={items.length}/>
+      <SearchItem search={search} setSearch={setSearch}></SearchItem>
+      <main>
+        {/* In JSX, && means: "if isLoading is true, then (following code)" */}
+        {isLoading && <p>Loading Items...</p>}
+        {fetchError && <p style={{ color: "red" }}>{`Error: ${fetchError}`}</p>}
+        {!fetchError && !isLoading && (
+          <Content
+            items={items.filter((item) =>
+              item.item.toLowerCase().includes(search.toLowerCase())
+            )}
+            handleCheck={handleCheck}
+            handleDelete={handleDelete}
+          />
+        )}
+      </main>
+      <Footer length={items.length} />
     </div>
   );
 }
