@@ -4,6 +4,7 @@ import Content from "./Content";
 import Footer from "./Footer";
 import AddItem from "./AddItem";
 import { useState, useEffect } from "react";
+import apiRequest from "./apiRequest";
 
 function App() {
   // url for the items from the backend
@@ -36,24 +37,54 @@ function App() {
     }, 1500);
   }, []);
 
-  const addItem = (item) => {
+  const addItem = async (item) => {
     // if there's an item, set the ID of that item to the last item's ID + 1. If no ID, give it an ID of 1
     const id = items.length ? items[items.length - 1].id + 1 : 1;
     const theNewItem = { id, checked: false, item };
     const listItems = [...items, theNewItem];
     setItems(listItems);
+
+    const postOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(theNewItem),
+    };
+    const result = await apiRequest(API_URL, postOptions);
+    if (result) setFetchError(result);
   };
 
-  const handleCheck = (id) => {
+  const handleCheck = async (id) => {
     const listItems = items.map((item) =>
       item.id === id ? { ...item, checked: !item.checked } : item
     );
     setItems(listItems);
+
+    const myItem = listItems.filter((item) => item.id === id);
+    const updateOptions = {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // checked status of request will be equal to the item we're filtering
+      body: JSON.stringify({ checked: myItem[0].checked }),
+    };
+    // need to add the specific ID of the selected item on to the API URL for PATCH and DELETE
+    const reqURL = `${API_URL}/${id}`;
+    const result = await apiRequest(reqURL, updateOptions);
+    if (result) setFetchError(result);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const listItems = items.filter((item) => item.id !== id);
     setItems(listItems);
+
+    // no headers for the delete request because there's no content-type?
+    const deleteOptions = { method: "DELETE" };
+    const reqURL = `${API_URL}/${id}`;
+    const result = await apiRequest(reqURL, deleteOptions);
+    if (result) setFetchError(result);
   };
 
   const handleSubmit = (e) => {
